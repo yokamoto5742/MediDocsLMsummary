@@ -6,25 +6,23 @@ class ModelType(str, Enum):
     GEMINI_PRO = "Gemini_Pro"
 
 # プロンプト管理
-DEFAULT_DEPARTMENT = ["default", "眼科"]
+DEFAULT_DEPARTMENT = ["default","内科", "消化器内科", "整形外科"]
 DEFAULT_DOCTOR = ["default"]
 DEPARTMENT_DOCTORS_MAPPING = {
     "default": ["default"],
-    "眼科": ["default", "橋本義弘"],
 }
-DOCUMENT_TYPES = ["他院への紹介", "紹介元への逆紹介", "返書", "最終返書"]
+DOCUMENT_TYPES = ["退院時サマリ", "現病歴"]
 
 # 統計情報
 DEFAULT_STATISTICS_PERIOD_DAYS = 7
 
 # 出力結果
 DEFAULT_SECTION_NAMES = [
-    "現在の処方",
-    "備考",
+    "入院期間", "現病歴", "入院時検査", "入院中の治療経過", "退院申し送り", "備考"
 ]
 
 # app/external/api_factory.py 他
-DEFAULT_DOCUMENT_TYPE = "他院への紹介"
+DEFAULT_DOCUMENT_TYPE = "退院時サマリ"
 # app/external/base_api.py
 DEFAULT_SUMMARY_PROMPT = """
 以下のカルテ情報を要約してください。これまでの治療内容を記載してください。
