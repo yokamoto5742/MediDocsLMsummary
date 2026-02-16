@@ -98,6 +98,7 @@ export interface MessagesMap {
 declare global {
     interface Window {
         DOCUMENT_PURPOSE_MAPPING?: Record<string, string>;
+        DOCUMENT_TYPES?: readonly string[];
         CSRF_TOKEN?: string;
         TAB_NAMES?: readonly string[];
         MESSAGES?: MessagesMap;

@@ -57,6 +57,9 @@
         {% if tab_names %}
         window.TAB_NAMES = {{ tab_names | tojson }};
         {% endif %}
+        {% if document_types %}
+        window.DOCUMENT_TYPES = {{ document_types | tojson }};
+        {% endif %}
         {% if messages %}
         window.MESSAGES = {{ messages | tojson }};
         {% endif %}

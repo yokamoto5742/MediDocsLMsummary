@@ -85,10 +85,8 @@ def test_get_document_types(client, test_db):
     data = response.json()
     assert "document_types" in data
     assert isinstance(data["document_types"], list)
-    assert "他院への紹介" in data["document_types"]
-    assert "紹介元への逆紹介" in data["document_types"]
-    assert "返書" in data["document_types"]
-    assert "最終返書" in data["document_types"]
+    assert "退院時サマリ" in data["document_types"]
+    assert "現病歴" in data["document_types"]
 
 
 def test_get_document_types_length(client, test_db):
@@ -97,7 +95,7 @@ def test_get_document_types_length(client, test_db):
 
     assert response.status_code == status.HTTP_200_OK
     data = response.json()
-    assert len(data["document_types"]) == 4
+    assert len(data["document_types"]) == 2
 
 
 def test_get_document_types_returns_expected_structure(client, test_db):

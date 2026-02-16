@@ -72,7 +72,7 @@ export function appState(): AppState {
         settings: {
             department: 'default',
             doctor: 'default',
-            documentType: '他院への紹介',
+            documentType: window.DOCUMENT_TYPES?.[0] ?? '退院時サマリ',
             model: 'Claude'
         },
         doctors: ['default'],
