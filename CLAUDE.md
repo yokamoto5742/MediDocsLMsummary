@@ -388,10 +388,9 @@ msg = get_message("CATEGORY", "KEY", placeholder="value")
 ### Adding a New Document Type
 
 1. Add to `DOCUMENT_TYPES` in `app/core/constants.py`
-2. Add purpose mapping to `DOCUMENT_TYPE_TO_PURPOSE_MAPPING`
-3. Update frontend dropdown in templates
-4. Add default prompt if needed
-5. Update tests
+2. Update frontend dropdown in templates
+3. Add default prompt if needed
+4. Update tests
 
 ### Adding a New Department/Doctor
 

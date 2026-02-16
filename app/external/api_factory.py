@@ -59,7 +59,6 @@ def generate_summary_with_provider(
     provider: Union[APIProvider, str],
     medical_text: str,
     additional_info: str = "",
-    referral_purpose: str = "",
     current_prescription: str = "",
     department: str = "default",
     document_type: str = DEFAULT_DOCUMENT_TYPE,
@@ -71,7 +70,6 @@ def generate_summary_with_provider(
     return client.generate_summary(
         medical_text,
         additional_info,
-        referral_purpose,
         current_prescription,
         department,
         document_type,
@@ -84,7 +82,6 @@ def generate_summary_stream_with_provider(
     provider: Union[APIProvider, str],
     medical_text: str,
     additional_info: str = "",
-    referral_purpose: str = "",
     current_prescription: str = "",
     department: str = "default",
     document_type: str = DEFAULT_DOCUMENT_TYPE,
@@ -96,7 +93,6 @@ def generate_summary_stream_with_provider(
     return client.generate_summary_stream(
         medical_text,
         additional_info,
-        referral_purpose,
         current_prescription,
         department,
         document_type,

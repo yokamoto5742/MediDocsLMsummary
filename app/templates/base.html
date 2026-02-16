@@ -48,9 +48,6 @@
     </div>
     <script>
         // テンプレートからJavaScriptへデータを渡す
-        {% if document_purpose_mapping %}
-        window.DOCUMENT_PURPOSE_MAPPING = {{ document_purpose_mapping | tojson }};
-        {% endif %}
         {% if csrf_token %}
         window.CSRF_TOKEN = {{ csrf_token | tojson }};
         {% endif %}

@@ -37,13 +37,6 @@ SECTION_DETECTION_PATTERNS = [
     r'^{section}\s*$',
 ]
 
-# 診療情報提供者アプリ固有の設定
-DOCUMENT_TYPE_TO_PURPOSE_MAPPING = {
-    "他院への紹介": "精査加療依頼",
-    "紹介元への逆紹介": "継続治療依頼",
-    "返書": "受診報告",
-    "最終返書": "治療経過報告",
-}
 
 MESSAGES: dict[str, dict[str, str]] = {
     "ERROR": {

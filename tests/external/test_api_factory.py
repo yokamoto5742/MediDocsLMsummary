@@ -188,8 +188,7 @@ class TestGenerateSummaryWithProvider:
         call_args = mock_generate.call_args[0]
         assert call_args[0] == "患者情報"
         assert call_args[1] == ""  # additional_info
-        assert call_args[2] == ""  # referral_purpose
-        assert call_args[3] == ""  # current_prescription
+        assert call_args[2] == ""  # current_prescription
 
     @patch("app.external.api_factory.get_settings")
     @patch.object(GeminiAPIClient, "generate_summary")
@@ -207,7 +206,6 @@ class TestGenerateSummaryWithProvider:
             provider="gemini",
             medical_text="カルテ情報",
             additional_info="追加情報",
-            referral_purpose="精査依頼",
             current_prescription="処方内容",
             department="眼科",
             document_type="他院への紹介",
@@ -221,12 +219,11 @@ class TestGenerateSummaryWithProvider:
         call_args = mock_generate.call_args[0]
         assert call_args[0] == "カルテ情報"
         assert call_args[1] == "追加情報"
-        assert call_args[2] == "精査依頼"
-        assert call_args[3] == "処方内容"
-        assert call_args[4] == "眼科"
-        assert call_args[5] == "他院への紹介"
-        assert call_args[6] == "橋本義弘"
-        assert call_args[7] == "gemini-1.5-pro-002"
+        assert call_args[2] == "処方内容"
+        assert call_args[3] == "眼科"
+        assert call_args[4] == "他院への紹介"
+        assert call_args[5] == "橋本義弘"
+        assert call_args[6] == "gemini-1.5-pro-002"
 
     @patch("app.external.api_factory.get_settings")
     @patch.object(ClaudeAPIClient, "generate_summary")
@@ -296,7 +293,7 @@ class TestGenerateSummaryWithProvider:
 
         call_args = mock_generate.call_args[0]
         # DEFAULT_DOCUMENT_TYPE が使用される
-        assert call_args[5] == "他院への紹介"
+        assert call_args[4] == "退院時サマリ"
 
 
 class TestEdgeCases:
@@ -365,7 +362,6 @@ class TestEdgeCases:
         call_args = mock_generate.call_args[0]
         assert call_args[1] == ""
         assert call_args[2] == ""
-        assert call_args[3] == ""
 
     @patch("app.external.api_factory.get_settings")
     @patch.object(ClaudeAPIClient, "generate_summary")
@@ -384,4 +380,4 @@ class TestEdgeCases:
         assert result == ("文書", 1000, 500)
 
         call_args = mock_generate.call_args[0]
-        assert call_args[7] is None
+        assert call_args[6] is None
