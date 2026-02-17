@@ -1,5 +1,7 @@
-import pytest
+import asyncio
 from unittest.mock import MagicMock, patch
+
+import pytest
 
 from app.core.constants import MESSAGES
 from app.services.evaluation_service import (
@@ -7,6 +9,14 @@ from app.services.evaluation_service import (
     execute_evaluation,
     execute_evaluation_stream,
 )
+
+
+async def _collect_stream_events(*args, **kwargs) -> list[str]:
+    """非同期ジェネレータからイベントを収集"""
+    events = []
+    async for event in execute_evaluation_stream(*args, **kwargs):
+        events.append(event)
+    return events
 
 
 class TestBuildEvaluationPrompt:
@@ -31,7 +41,7 @@ class TestBuildEvaluationPrompt:
         assert prompt_template in result
         assert "【カルテ記載】" in result
         assert input_text in result
-        assert "【現在の処方】" in result
+        assert "【退院時処方(現在の処方)】" in result
         assert current_prescription in result
         assert "【追加情報】" in result
         assert additional_info in result
@@ -291,7 +301,7 @@ class TestExecuteEvaluation:
         call_args = mock_client._generate_content.call_args[0][0]
         assert "詳細な評価プロンプト" in call_args
         assert "【カルテ記載】" in call_args
-        assert "【現在の処方】" in call_args
+        assert "【退院時処方(現在の処方)】" in call_args
         assert "【追加情報】" in call_args
         assert "【生成された出力】" in call_args
 
@@ -299,11 +309,10 @@ class TestExecuteEvaluation:
 class TestExecuteEvaluationStream:
     """execute_evaluation_stream 関数のテスト"""
 
-    @pytest.mark.asyncio
     @patch("app.services.evaluation_service._run_sync_evaluation")
     @patch("app.services.evaluation_service.get_db_session")
     @patch("app.services.evaluation_service.settings")
-    async def test_execute_evaluation_stream_success(
+    def test_execute_evaluation_stream_success(
         self, mock_settings, mock_get_db_session, mock_run_sync
     ):
         """評価ストリーミング実行 - 正常系"""
@@ -322,15 +331,13 @@ class TestExecuteEvaluationStream:
         # モック評価結果
         mock_run_sync.return_value = ("評価結果: 良好です", 1000, 500)
 
-        events = []
-        async for event in execute_evaluation_stream(
+        events = asyncio.run(_collect_stream_events(
             document_type="他院への紹介",
             input_text="患者情報",
             current_prescription="処方内容",
             additional_info="追加情報",
             output_summary="出力内容"
-        ):
-            events.append(event)
+        ))
 
         # イベント検証
         assert len(events) >= 3  # progress, progress, complete
@@ -340,49 +347,42 @@ class TestExecuteEvaluationStream:
         assert '"input_tokens": 1000' in events[-1]
         assert '"output_tokens": 500' in events[-1]
 
-    @pytest.mark.asyncio
     @patch("app.services.evaluation_service.settings")
-    async def test_execute_evaluation_stream_no_output(self, mock_settings):
+    def test_execute_evaluation_stream_no_output(self, mock_settings):
         """評価ストリーミング実行 - 出力なしエラー"""
-        events = []
-        async for event in execute_evaluation_stream(
+        events = asyncio.run(_collect_stream_events(
             document_type="他院への紹介",
             input_text="患者情報",
             current_prescription="",
             additional_info="",
             output_summary=""
-        ):
-            events.append(event)
+        ))
 
         assert len(events) == 1
         assert "event: error" in events[0]
         assert MESSAGES["VALIDATION"]["EVALUATION_NO_OUTPUT"] in events[0]
 
-    @pytest.mark.asyncio
     @patch("app.services.evaluation_service.settings")
-    async def test_execute_evaluation_stream_model_missing(self, mock_settings):
+    def test_execute_evaluation_stream_model_missing(self, mock_settings):
         """評価ストリーミング実行 - モデル未設定エラー"""
         mock_settings.gemini_evaluation_model = None
         mock_settings.max_input_tokens = 100000
 
-        events = []
-        async for event in execute_evaluation_stream(
+        events = asyncio.run(_collect_stream_events(
             document_type="他院への紹介",
             input_text="患者情報",
             current_prescription="",
             additional_info="",
             output_summary="出力内容"
-        ):
-            events.append(event)
+        ))
 
         assert len(events) == 1
         assert "event: error" in events[0]
         assert MESSAGES["CONFIG"]["EVALUATION_MODEL_MISSING"] in events[0]
 
-    @pytest.mark.asyncio
     @patch("app.services.evaluation_service.get_db_session")
     @patch("app.services.evaluation_service.settings")
-    async def test_execute_evaluation_stream_prompt_not_set(
+    def test_execute_evaluation_stream_prompt_not_set(
         self, mock_settings, mock_get_db_session
     ):
         """評価ストリーミング実行 - プロンプト未設定エラー"""
@@ -394,26 +394,23 @@ class TestExecuteEvaluationStream:
         mock_get_db_session.return_value.__enter__.return_value = mock_db
         mock_db.query.return_value.filter.return_value.first.return_value = None
 
-        events = []
-        async for event in execute_evaluation_stream(
+        events = asyncio.run(_collect_stream_events(
             document_type="他院への紹介",
             input_text="患者情報",
             current_prescription="",
             additional_info="",
             output_summary="出力内容"
-        ):
-            events.append(event)
+        ))
 
         assert len(events) == 1
         assert "event: error" in events[0]
         assert "他院への紹介" in events[0]
         assert "評価プロンプトが設定されていません" in events[0]
 
-    @pytest.mark.asyncio
     @patch("app.services.evaluation_service._run_sync_evaluation")
     @patch("app.services.evaluation_service.get_db_session")
     @patch("app.services.evaluation_service.settings")
-    async def test_execute_evaluation_stream_api_error(
+    def test_execute_evaluation_stream_api_error(
         self, mock_settings, mock_get_db_session, mock_run_sync
     ):
         """評価ストリーミング実行 - API呼び出しエラー"""
@@ -432,15 +429,13 @@ class TestExecuteEvaluationStream:
         # モックでエラー
         mock_run_sync.side_effect = Exception("API接続エラー")
 
-        events = []
-        async for event in execute_evaluation_stream(
+        events = asyncio.run(_collect_stream_events(
             document_type="他院への紹介",
             input_text="患者情報",
             current_prescription="",
             additional_info="",
             output_summary="出力内容"
-        ):
-            events.append(event)
+        ))
 
         # progressイベントとerrorイベント
         assert any("event: error" in e for e in events)

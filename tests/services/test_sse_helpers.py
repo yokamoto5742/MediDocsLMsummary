@@ -1,8 +1,15 @@
+import asyncio
 import json
 
-import pytest
-
 from app.services.sse_helpers import sse_event, stream_with_heartbeat
+
+
+async def _collect_heartbeat_items(*args, **kwargs) -> list:
+    """stream_with_heartbeat からアイテムを収集"""
+    items = []
+    async for item in stream_with_heartbeat(*args, **kwargs):
+        items.append(item)
+    return items
 
 
 class TestSseEvent:
@@ -47,22 +54,19 @@ class TestSseEvent:
 class TestStreamWithHeartbeat:
     """stream_with_heartbeat 関数のテスト"""
 
-    @pytest.mark.asyncio
-    async def test_stream_with_heartbeat_success(self):
+    def test_stream_with_heartbeat_success(self):
         """ハートビート付きストリーミング - 正常系"""
         def sync_task(a: int, b: int) -> tuple[str, int, int]:
             return "結果", a, b
 
-        items = []
-        async for item in stream_with_heartbeat(
+        items = asyncio.run(_collect_heartbeat_items(
             sync_func=sync_task,
             sync_func_args=(100, 50),
             start_message="開始",
             running_status="processing",
             running_message="処理中",
             elapsed_message_template="処理中... {elapsed}秒",
-        ):
-            items.append(item)
+        ))
 
         # progress(starting) + progress(processing) + result
         assert len(items) >= 3
@@ -73,22 +77,19 @@ class TestStreamWithHeartbeat:
         # 最後はresultタプル
         assert items[-1] == ("結果", 100, 50)
 
-    @pytest.mark.asyncio
-    async def test_stream_with_heartbeat_error(self):
+    def test_stream_with_heartbeat_error(self):
         """ハートビート付きストリーミング - エラー"""
         def sync_task() -> tuple[str, int, int]:
             raise ValueError("テストエラー")
 
-        items = []
-        async for item in stream_with_heartbeat(
+        items = asyncio.run(_collect_heartbeat_items(
             sync_func=sync_task,
             sync_func_args=(),
             start_message="開始",
             running_status="processing",
             running_message="処理中",
             elapsed_message_template="処理中... {elapsed}秒",
-        ):
-            items.append(item)
+        ))
 
         # progressイベントとerrorイベント
         assert any("event: error" in str(i) for i in items)
