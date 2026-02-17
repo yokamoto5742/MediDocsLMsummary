@@ -18,7 +18,7 @@ DEFAULT_STATISTICS_PERIOD_DAYS = 7
 
 # 出力結果
 DEFAULT_SECTION_NAMES = [
-    "入院期間", "現病歴", "入院時検査", "入院中の治療経過", "退院申し送り", "備考"
+    "現病歴", "入院時検査所見", "入院経過", "退院時状況", "備考"
 ]
 
 # app/external/api_factory.py 他
