@@ -22,7 +22,7 @@ from app.utils.error_handlers import api_exception_handler, validation_exception
 settings = get_settings()
 
 logging.basicConfig(
-    level=logging.INFO,
+    level=logging.DEBUG,
     format="%(levelname)s:\t%(name)s - %(message)s",
 )
 
